@@ -1,5 +1,25 @@
-// Desactivamos la simulación local para usar las páginas JSP y la base de datos
-localStorage.clear();
+// =========================================================================
+// LIMPIEZA SELECTIVA DE LA SIMULACIÓN LOCAL
+// Antes: localStorage.clear() borraba TODO (incluido el rol activo).
+// Ahora: se siguen limpiando los datos de simulación del actor, pero se
+// conservan las claves necesarias para el rol de Productora.
+// =========================================================================
+(() => {
+  const PERSISTENT_KEYS = ["stagelink.role", "stagelink.subscription"];
+  const PERSISTENT_PREFIXES = ["stagelink.producer."];
+
+  try {
+    Object.keys(localStorage).forEach((key) => {
+      const keep =
+        PERSISTENT_KEYS.includes(key) ||
+        PERSISTENT_PREFIXES.some((prefix) => key.startsWith(prefix));
+      if (!keep) localStorage.removeItem(key);
+    });
+  } catch (error) {
+    // Si localStorage no está disponible, continuamos sin limpiar.
+  }
+})();
+
 (() => {
   "use strict";
 
@@ -13,7 +33,9 @@ localStorage.clear();
     savedAuditions: "stagelink.savedAuditions",
     applications: "stagelink.applications",
     notifications: "stagelink.notifications",
-    candidates: "stagelink.candidates"
+    candidates: "stagelink.candidates",
+    // Datos de la compañía (Productora). Se conserva en la limpieza por su prefijo.
+    producerCompany: "stagelink.producer.company"
   };
 
   const backend = window.StageLinkBackend || null;
@@ -39,7 +61,16 @@ localStorage.clear();
     notifications: ["Notificaciones", "Actividad reciente"],
     profile: ["Mi perfil", "Información profesional"],
     create: ["Crear convocatoria", "Publicación guiada"],
-    dashboard: ["Gestión", "Seguimiento"]
+    dashboard: ["Gestión", "Seguimiento"],
+    subscription: ["Suscripción", "Plan de productora"],
+    edit: ["Editar convocatoria", "Gestión de convocatorias"]
+  };
+
+  // Páginas secundarias -> ítem del menú que debe verse como "activo"
+  const NAV_PARENT = {
+    audition: "feed",
+    subscription: "create",
+    edit: "dashboard"
   };
 
   function read(key, fallback) {
@@ -61,7 +92,8 @@ localStorage.clear();
   }
 
   function getRole() {
-    return localStorage.getItem(STORAGE.role) || "actor";
+    const stored = localStorage.getItem(STORAGE.role);
+    return stored === "producer" || stored === "actor" ? stored : "actor";
   }
 
   function setRole(role) {
@@ -69,9 +101,36 @@ localStorage.clear();
     localStorage.setItem(STORAGE.role, role);
   }
 
+  // Rol de demostración por parámetro de URL: ?role=producer | ?role=actor
+  // (No hay sesión real todavía; esto permite probar cada rol.)
+  (function applyRoleFromUrl() {
+    try {
+      const requested = new URLSearchParams(window.location.search).get("role");
+      if (requested === "producer" || requested === "actor") setRole(requested);
+    } catch (error) {
+      // Ignoramos errores de lectura de la URL.
+    }
+  })();
+
   function getProfile(role = getRole() || "actor") {
     const profiles = read(STORAGE.profiles, DEFAULT_PROFILES);
-    return { ...DEFAULT_PROFILES[role], ...(profiles[role] || {}) };
+    const profile = { ...DEFAULT_PROFILES[role], ...(profiles[role] || {}) };
+
+    // Productora: los datos guardados de la compañía (producer-profile.js)
+    // tienen prioridad, para que el sidebar muestre el nombre y la foto actuales.
+    if (role === "producer") {
+      const company = read(STORAGE.producerCompany, null);
+      if (company && typeof company === "object") {
+        const name = company.displayName || company.name;
+        if (name) profile.displayName = name;
+        if (company.city) profile.city = company.city;
+        if (company.bio) profile.bio = company.bio;
+        if (company.phone) profile.phone = company.phone;
+        if (company.avatar) profile.avatar = company.avatar;
+      }
+    }
+
+    return profile;
   }
 
   function escapeHtml(value) {
@@ -143,7 +202,7 @@ localStorage.clear();
 
   function renderNavLinks(items, page) {
     return items.map(([key, href, label, iconName]) => {
-      const current = key === page || (page === "audition" && key === "feed");
+      const current = key === page || NAV_PARENT[page] === key;
       return `<a class="nav-link" href="${href}" ${current ? 'aria-current="page"' : ""}>
         ${icon(iconName, "nav-icon")}
         <span class="nav-text">${escapeHtml(label)}</span>
@@ -196,6 +255,10 @@ localStorage.clear();
   function initWelcome() {
     // Controlado directamente por los enlaces y atributos onclick en el index.jsp
   }
+
+  // API mínima para que los scripts de Productora (producer-*.js) reutilicen
+  // el rol y el perfil sin duplicar las claves de almacenamiento.
+  window.StageLinkApp = { getRole, setRole, getProfile, escapeHtml };
 
   const page = document.body.dataset.page;
   if (page && page !== "welcome") {
