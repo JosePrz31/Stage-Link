@@ -50,11 +50,14 @@
 <link rel="icon" type="image/svg+xml"
 	href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230a0a0a'/%3E%3Cpath d='M18 18h30v8H27v7h17v8H27v10h-9z' fill='white'/%3E%3C/svg%3E">
 
-<!-- Hoja de estilos principal (ajustada a la ruta relativa '../css/styles.css') -->
-<link rel="stylesheet" href="../css/styles.css">
+<!-- Hoja de estilos general + estilos exclusivos de Productora (en ese orden) -->
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/styles.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/producer.css">
 
-<!-- Script local de interfaz para alternar vistas entre actor y productora -->
-<script src="../javascript/app.js" defer></script>
+<!-- Scripts: shell compartido, datos simulados y lógica de la vista de Productora (en orden) -->
+<script src="${pageContext.request.contextPath}/javascript/app.js" defer></script>
+<script src="${pageContext.request.contextPath}/javascript/producer-data.js" defer></script>
+<script src="${pageContext.request.contextPath}/javascript/producer-dashboard.js" defer></script>
 </head>
 <body data-page="dashboard">
 	<!-- Enlace de accesibilidad para saltar directamente al contenido -->
@@ -108,9 +111,13 @@
 							<p>Revisa perfiles, califica candidatos y registra notas
 								privadas en un solo lugar.</p>
 						</div>
-						<a class="button" href="create-audition.jsp">Nueva
+						<a class="button" id="new-audition-link" href="create-audition.jsp">Nueva
 							convocatoria</a>
 					</div>
+
+					<!-- Aviso si la productora aún no tiene suscripción activa (lo gestiona producer-dashboard.js) -->
+					<div class="auth-message" id="producer-sub-notice" data-type="info"
+						style="margin-bottom: 20px" hidden></div>
 
 					<div class="dashboard-grid">
 						<!-- Columna izquierda: Listado de convocatorias creadas por la productora -->
@@ -129,6 +136,10 @@
 							<!-- Estadísticas de candidatos postulados -->
 							<div class="stats-grid" id="candidate-stats"></div>
 
+							<!-- Filtros por estado de postulación -->
+							<div class="cand-filters" id="cand-filters"
+								role="group" aria-label="Filtrar candidatos por estado"></div>
+
 							<!-- Listado de perfiles de los aspirantes -->
 							<div class="candidate-list" id="candidate-list"></div>
 						</section>
@@ -141,5 +152,29 @@
 			<nav class="mobile-nav" id="mobile-nav"></nav>
 		</div>
 	</div>
+
+	<!-- Diálogo: detalle del candidato (datos, materiales, calificación y nota privada) -->
+	<dialog class="dialog" id="candidate-dialog"
+		aria-labelledby="candidate-dialog-title">
+		<header class="dialog-header">
+			<div>
+				<h2 id="candidate-dialog-title">Perfil del actor</h2>
+				<p id="candidate-dialog-sub"></p>
+			</div>
+			<button class="dialog-close" type="button" data-close-dialog
+				aria-label="Cerrar">
+				<svg class="icon-inline" viewBox="0 0 24 24" fill="none"
+					stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="m6 6 12 12M18 6 6 18"></path>
+        </svg>
+			</button>
+		</header>
+		<div class="dialog-body" id="candidate-dialog-body"></div>
+		<footer class="dialog-actions">
+			<button class="button secondary" type="button" data-close-dialog>Cerrar</button>
+			<button class="button" type="button" id="candidate-save-note">Guardar
+				nota y calificación</button>
+		</footer>
+	</dialog>
 </body>
 </html>
