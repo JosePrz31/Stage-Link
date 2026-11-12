@@ -77,11 +77,14 @@
 <link rel="icon" type="image/svg+xml"
 	href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230a0a0a'/%3E%3Cpath d='M18 18h30v8H27v7h17v8H27v10h-9z' fill='white'/%3E%3C/svg%3E">
 
-<!-- Hoja de estilos general (ajustada con ruta relativa '../css/styles.css') -->
-<link rel="stylesheet" href="../css/styles.css">
+<!-- Hoja de estilos general + estilos exclusivos de Productora (en ese orden) -->
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/styles.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/producer.css">
 
-<!-- Script local de interfaz para controlar el formulario por pasos -->
-<script src="../javascript/app.js" defer></script>
+<!-- Scripts: shell compartido, datos simulados y lógica de la página (se ejecutan en orden) -->
+<script src="${pageContext.request.contextPath}/javascript/app.js" defer></script>
+<script src="${pageContext.request.contextPath}/javascript/producer-data.js" defer></script>
+<script src="${pageContext.request.contextPath}/javascript/producer-create.js" defer></script>
 </head>
 <body data-page="create">
 	<!-- Enlace de accesibilidad para saltar directamente al contenido -->
@@ -102,6 +105,8 @@
 						<p>Completa la información en cuatro pasos. Los campos están
 							agrupados para que el proceso sea claro y rápido.</p>
 					</div>
+					<!-- Aquí producer-create.js muestra la insignia de suscripción -->
+					<div class="heading-actions" id="create-sub-status"></div>
 				</div>
 
 				<!-- Mensaje de feedback si ocurre un error al registrar en la base de datos -->
@@ -128,6 +133,48 @@
 							perfil.</p>
 						<a class="button secondary" href="feed.jsp">Volver a
 							audiciones</a>
+					</div>
+				</section>
+
+				<!-- Control de suscripción: se muestra si la productora aún no tiene suscripción activa -->
+				<section class="card" id="create-sub-guard" hidden>
+					<div class="sub-guard">
+						<div class="sub-guard-inner">
+							<span class="empty-icon" aria-hidden="true"> <svg
+									viewBox="0 0 24 24" fill="none" stroke="currentColor"
+									stroke-width="1.8" stroke-linecap="round"
+									stroke-linejoin="round">
+                  <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                  <path d="M2 10h20M6 15h4"></path>
+                </svg>
+							</span>
+							<h2>Necesitas una suscripción para publicar convocatorias</h2>
+							<p>Para crear y publicar convocatorias debes activar una
+								suscripción de productora. Elige un plan, completa el pago y
+								vuelve aquí para empezar.</p>
+							<ul class="sub-guard-benefits">
+								<li><svg viewBox="0 0 24 24" fill="none"
+										stroke="currentColor" stroke-width="2" stroke-linecap="round"
+										stroke-linejoin="round" aria-hidden="true">
+                    <path d="m5 12 5 5 9-10"></path>
+                  </svg><span>Publica convocatorias y define todos sus roles</span></li>
+								<li><svg viewBox="0 0 24 24" fill="none"
+										stroke="currentColor" stroke-width="2" stroke-linecap="round"
+										stroke-linejoin="round" aria-hidden="true">
+                    <path d="m5 12 5 5 9-10"></path>
+                  </svg><span>Recibe y gestiona las postulaciones de los artistas</span></li>
+								<li><svg viewBox="0 0 24 24" fill="none"
+										stroke="currentColor" stroke-width="2" stroke-linecap="round"
+										stroke-linejoin="round" aria-hidden="true">
+                    <path d="m5 12 5 5 9-10"></path>
+                  </svg><span>Revisa portafolios y videos sin descargas externas</span></li>
+							</ul>
+							<div class="sub-guard-actions">
+								<a class="button" href="subscription.jsp">Ver planes y
+									suscribirme</a> <a class="button secondary" href="feed.jsp">Volver
+									a convocatorias</a>
+							</div>
+						</div>
 					</div>
 				</section>
 
