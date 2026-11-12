@@ -60,11 +60,14 @@
 <link rel="icon" type="image/svg+xml"
 	href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230a0a0a'/%3E%3Cpath d='M18 18h30v8H27v7h17v8H27v10h-9z' fill='white'/%3E%3C/svg%3E">
 
-<!-- Hoja de estilos principal (ajustada a la ruta relativa '../css/styles.css') -->
-<link rel="stylesheet" href="../css/styles.css">
+<!-- Hoja de estilos general + estilos exclusivos de Productora (en ese orden) -->
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/styles.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/producer.css">
 
-<!-- Script local de interfaz para la gestión visual del perfil -->
-<script src="../javascript/app.js" defer></script>
+<!-- Scripts: shell compartido, datos simulados y lógica de perfil de Productora (en orden) -->
+<script src="${pageContext.request.contextPath}/javascript/app.js" defer></script>
+<script src="${pageContext.request.contextPath}/javascript/producer-data.js" defer></script>
+<script src="${pageContext.request.contextPath}/javascript/producer-profile.js" defer></script>
 </head>
 <body data-page="profile">
 	<!-- Enlace de accesibilidad para saltar directamente al contenido principal -->
@@ -95,6 +98,10 @@
 				</div>
 				<% } %>
 
+				<!-- Mensaje del guardado simulado de Productora (lo gestiona producer-profile.js) -->
+				<div class="auth-message" id="profile-message" role="status"
+					data-type="success" hidden style="margin-bottom: 20px;"></div>
+
 				<div class="profile-layout">
 					<!-- Columna izquierda: Panel de avatar y foto de perfil -->
 					<aside class="card panel profile-card">
@@ -123,6 +130,14 @@
 								<p class="form-note" id="account-type-description"
 									style="margin-top: 4px"></p>
 							</div>
+						</section>
+
+						<!-- Suscripción de la productora (la muestra y rellena producer-profile.js) -->
+						<section id="subscription-section" style="margin-top: 28px"
+							aria-labelledby="subscription-title" hidden>
+							<h2 class="section-title" id="subscription-title">Suscripción</h2>
+							<div class="card subscription-card" id="subscription-card"
+								aria-live="polite"></div>
 						</section>
 
 						<!-- Información principal editable -->
@@ -201,6 +216,10 @@
 							aria-labelledby="producer-data-title" hidden>
 							<h2 class="section-title" id="producer-data-title">Información
 								de la compañía</h2>
+
+							<!-- Estado de aprobación de la cuenta (Fase 2, sección 1.4-D) -->
+							<div id="company-approval" style="margin-bottom: 16px"></div>
+
 							<div class="form-grid">
 								<label class="field"><span class="field-label">Tipo
 										de compañía</span><input class="input" name="companyType"></label> <label
@@ -212,10 +231,12 @@
 										<option>Mediana</option>
 										<option>Grande</option></select></label> <label class="field"><span
 									class="field-label">Persona de contacto</span><input
-									class="input" name="contactName"></label> <label
-									class="field span-2"><span class="field-label">Sitio
-										web</span><input class="input" type="url" name="website"
-									placeholder="https://"></label>
+									class="input" name="contactName"></label> <label class="field"><span
+									class="field-label">Correo de contacto</span><input
+									class="input" type="email" name="contactEmail"
+									autocomplete="email"></label> <label class="field span-2"><span
+									class="field-label">Sitio web</span><input class="input"
+									type="url" name="website" placeholder="https://"></label>
 							</div>
 						</section>
 
